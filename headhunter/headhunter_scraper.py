@@ -1,13 +1,18 @@
+from pprint import pprint
 import requests
 from bs4 import BeautifulSoup
 import re
-import json
+from pymongo import MongoClient, errors
 
 
-def join_split(string):
-    return "".join(string.split())
+def salary_func(string, replace_str):
+    return int("".join(string.group().replace(replace_str, "").strip().split()))
 
 
+client = MongoClient("127.0.0.1", 27017)
+db = client["headhunter"]
+vacancies_hh = db.vacancies
+# vacancies_hh.delete_many({})
 vacancy_text = input("Please enter the job title you want to find: ")
 url = "https://ufa.hh.ru/search/vacancy"
 params = {
@@ -33,8 +38,7 @@ pages_to_parse = int(
 )
 if pages_to_parse > last_page:
     exit(1)
-
-vacancies_list = []
+id_count = 1
 for i in range(0, pages_to_parse):
     params["page"] = i
     print(f"Scraping page No.{i+1}")
@@ -65,20 +69,14 @@ for i in range(0, pages_to_parse):
             salary_from = re.search(r"^(от)?\s?(?:\d+\s?)+", salary.text)
             salary_to = re.search(r"((до)|–)\s(?:\d+\s?)+", salary.text)
             if salary_from is not None and salary_to is not None:
-                vacancy_data["salary_from"] = int(
-                    join_split(salary_from.group().strip())
-                )
-                vacancy_data["salary_to"] = int(
-                    join_split(salary_to.group().replace("–", "").strip())
-                )
+                vacancy_data["salary_from"] = salary_func(salary_from, "")
+                vacancy_data["salary_to"] = salary_func(salary_to, "–")
+
             elif salary_from is not None:
-                vacancy_data["salary_from"] = int(
-                    join_split(salary_from.group().replace("от", "").strip())
-                )
+                vacancy_data["salary_from"] = salary_func(salary_from, "от")
+
             elif salary_to is not None:
-                vacancy_data["salary_to"] = int(
-                    join_split(salary_to.group().replace("до", "").strip())
-                )
+                vacancy_data["salary_to"] = salary_func(salary_to, "до")
 
         company = vacancy.select_one("a[data-qa='vacancy-serp__vacancy-employer']").text
         city = vacancy.select_one("div[data-qa='vacancy-serp__vacancy-address']").text
@@ -97,15 +95,18 @@ for i in range(0, pages_to_parse):
             short_description = req_desc.text
         else:
             short_description = res_desc.text
-
+        vacancy_data["_id"] = id_count
         vacancy_data["name"] = name
         vacancy_data["href"] = href
         vacancy_data["work_from_home"] = work_from_home
         vacancy_data["company"] = company
         vacancy_data["city"] = city
         vacancy_data["short_description"] = short_description
+        try:
+            vacancies_hh.insert_one(vacancy_data)
+        except errors.DuplicateKeyError:
+            pass
+        id_count += 1
 
-        vacancies_list.append(vacancy_data)
-
-with open(f"{vacancy_text}_vacancies.json", "w", encoding="utf-8") as f:
-    json.dump(vacancies_list, f)
+for item in vacancies_hh.find({}):
+    pprint(item)
