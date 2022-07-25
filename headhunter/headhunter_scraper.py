@@ -2,7 +2,7 @@ from pprint import pprint
 import requests
 from bs4 import BeautifulSoup
 import re
-from pymongo import MongoClient, errors
+from pymongo import MongoClient
 
 
 def salary_func(string, replace_str):
@@ -38,7 +38,6 @@ pages_to_parse = int(
 )
 if pages_to_parse > last_page:
     exit(1)
-id_count = 1
 for i in range(0, pages_to_parse):
     params["page"] = i
     print(f"Scraping page No.{i+1}")
@@ -95,18 +94,17 @@ for i in range(0, pages_to_parse):
             short_description = req_desc.text
         else:
             short_description = res_desc.text
-        vacancy_data["_id"] = id_count
+        vacancy_data["_id"] = hash(href)
         vacancy_data["name"] = name
         vacancy_data["href"] = href
         vacancy_data["work_from_home"] = work_from_home
         vacancy_data["company"] = company
         vacancy_data["city"] = city
         vacancy_data["short_description"] = short_description
-        try:
-            vacancies_hh.insert_one(vacancy_data)
-        except errors.DuplicateKeyError:
-            pass
-        id_count += 1
+
+        vacancies_hh.update_one(
+            {"_id": vacancy_data["_id"]}, {"$set": vacancy_data}, upsert=True
+        )
 
 for item in vacancies_hh.find({}):
     pprint(item)

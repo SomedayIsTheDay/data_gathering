@@ -13,7 +13,8 @@ def salary_more_than(num):
         print(vacancy)
 
 
+wanted_salary = int(input("Enter the salary you want to see in the list of vacancies"))
 client = MongoClient("127.0.0.1", 27017)
 db = client["headhunter"]
 vacancies_hh = db.vacancies
-salary_more_than(200000)
+salary_more_than(wanted_salary)
