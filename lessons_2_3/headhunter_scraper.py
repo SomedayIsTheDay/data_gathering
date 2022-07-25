@@ -3,6 +3,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 from pymongo import MongoClient
+import hashlib
 
 
 def salary_func(string, replace_str):
@@ -94,7 +95,7 @@ for i in range(0, pages_to_parse):
             short_description = req_desc.text
         else:
             short_description = res_desc.text
-        vacancy_data["_id"] = hash(href)
+        vacancy_data["_id"] = hashlib.md5(href.encode()).hexdigest()
         vacancy_data["name"] = name
         vacancy_data["href"] = href
         vacancy_data["work_from_home"] = work_from_home
