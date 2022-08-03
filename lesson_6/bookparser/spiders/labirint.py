@@ -1,7 +1,7 @@
 import scrapy
 from scrapy.http import HtmlResponse
 import hashlib
-from lesson_6_7_8.bookparser.items import BookparserItem
+from lesson_6.bookparser.items import BookparserItem
 
 
 class LabirintSpider(scrapy.Spider):

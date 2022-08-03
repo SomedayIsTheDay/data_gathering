@@ -1,4 +1,4 @@
-# Scrapy settings for bookparser project
+# Scrapy settings for houseparser project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -7,11 +7,15 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = "bookparser"
+BOT_NAME = "houseparser"
 
-SPIDER_MODULES = ["bookparser.spiders"]
-NEWSPIDER_MODULE = "bookparser.spiders"
+SPIDER_MODULES = ["houseparser.spiders"]
+NEWSPIDER_MODULE = "houseparser.spiders"
 
+IMAGES_STORE = "photos"
+
+LOG_ENABLED = True
+LOG_LEVEL = "DEBUG"
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 USER_AGENT = (
@@ -28,7 +32,7 @@ CONCURRENT_REQUESTS = 32
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-DOWNLOAD_DELAY = 0.1
+DOWNLOAD_DELAY = 0
 # The download delay setting will honor only one of:
 # CONCURRENT_REQUESTS_PER_DOMAIN = 16
 # CONCURRENT_REQUESTS_PER_IP = 16
@@ -66,7 +70,8 @@ COOKIES_ENABLED = True
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    "bookparser.pipelines.BookparserPipeline": 300,
+    "houseparser.pipelines.HouseparserPipeline": 300,
+    "houseparser.pipelines.HouseparserPhotosPipeline": 200,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
