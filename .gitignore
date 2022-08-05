@@ -133,3 +133,4 @@ jobparser
 scrapy.cfg
 olxparser
 photos
+instaparser
